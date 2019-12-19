@@ -9,3 +9,5 @@ Fun with Dash and Plotly
 * `pip` is available from inside virtual env
 * deactivate
     * from rootdir `deactivate`
+* to run app
+    * from rootdir `python app.py`
