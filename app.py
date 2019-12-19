@@ -12,7 +12,7 @@ app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 df = pd.read_csv('./data/diamonds.csv')
 
 cuts = df['cut'].unique()
-colors = df['color'].unique()
+clarity = df['clarity'].unique()
 
 app.layout = html.Div([
     html.Div([
@@ -28,7 +28,7 @@ app.layout = html.Div([
         html.Div([
             dcc.Dropdown(
                 id='yaxis-column',
-                options=[{'label': i, 'value': i} for i in colors],
+                options=[{'label': i, 'value': i} for i in clarity],
                 value='SI2'
             )],
             style={'width': '48%', 'float': 'right', 'display': 'inline-block'})
@@ -37,11 +37,11 @@ app.layout = html.Div([
     dcc.Graph(id='diamond-graphic'),
 
     dcc.Slider(
-        id='carat',
+        id='carat--slider',
         min=df['carat'].min(),
         max=df['carat'].max(),
         value=df['carat'].max(),
-        marks={str(carat): str(carat) for carat in df['carat'].unique()},
+        marks={str(carat): str(carat) for carat in range(1, 6)},
         step=None
     )
 ])
@@ -50,19 +50,15 @@ app.layout = html.Div([
     Output('diamond-graphic', 'figure'),
     [Input('xaxis-column', 'value'),
      Input('yaxis-column', 'value'),
-     Input('xaxis-type', 'value'),
-     Input('yaxis-type', 'value'),
      Input('carat--slider', 'value')])
-def update_graph(xaxis_column_name, yaxis_column_name,
-                 xaxis_type, yaxis_type,
-                 carat_value):
-    dff = df[df['carat'] == carat_value]
+def update_graph(xaxis_column_name, yaxis_column_name, carat_value):
+    dff = df[df['carat'] <= carat_value]
 
     return {
         'data': [dict(
-            x=dff[dff['Indicator Name'] == xaxis_column_name]['Value'],
-            y=dff[dff['Indicator Name'] == yaxis_column_name]['Value'],
-            text=dff[dff['Indicator Name'] == yaxis_column_name]['Country Name'],
+            x=dff[dff['cut'] == xaxis_column_name]['price'],
+            y=dff[dff['color'] == yaxis_column_name]['price'],
+#            text=dff[dff['Indicator Name'] == yaxis_column_name]['Country Name'],
             mode='markers',
             marker={
                 'size': 15,
@@ -73,11 +69,9 @@ def update_graph(xaxis_column_name, yaxis_column_name,
         'layout': dict(
             xaxis={
                 'title': xaxis_column_name,
-                'type': 'linear' if xaxis_type == 'Linear' else 'log'
             },
             yaxis={
                 'title': yaxis_column_name,
-                'type': 'linear' if yaxis_type == 'Linear' else 'log'
             },
             margin={'l': 40, 'b': 40, 't': 10, 'r': 0},
             hovermode='closest'
