@@ -4,6 +4,7 @@ import dash_html_components as html
 from dash.dependencies import Input, Output
 
 import pandas as pd
+import numpy as np
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
@@ -12,52 +13,50 @@ app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 df = pd.read_csv('./data/diamonds.csv')
 
 cuts = df['cut'].unique()
-clarity = df['clarity'].unique()
+color = df['color'].unique()
 
 app.layout = html.Div([
     html.Div([
 
         html.Div([
             dcc.Dropdown(
-                id='xaxis-column',
+                id='filter1',
                 options=[{'label': i, 'value': i} for i in cuts],
                 value='Ideal'
-            )],
-            style={'width': '48%', 'display': 'inline-block'}),
-
+            )
+        ], style={'width': '48%', 'display': 'inline-block'}),
         html.Div([
             dcc.Dropdown(
-                id='yaxis-column',
-                options=[{'label': i, 'value': i} for i in clarity],
-                value='SI2'
-            )],
-            style={'width': '48%', 'float': 'right', 'display': 'inline-block'})
+                id='filter2',
+                options=[{'label': i, 'value': i} for i in color],
+                value='E'
+            )
+        ], style={'width': '48%', 'float': 'right', 'display': 'inline-block'}),
     ]),
 
     dcc.Graph(id='diamond-graphic'),
 
-    dcc.Slider(
-        id='carat--slider',
-        min=df['carat'].min(),
-        max=df['carat'].max(),
-        value=df['carat'].max(),
-        marks={str(carat): str(carat) for carat in range(1, 6)},
-        step=None
-    )
+    # dcc.Slider(
+    #     id='carat--slider',
+    #     min=df['carat'].min(),
+    #     max=df['carat'].max(),
+    #     value=df['carat'].max(),
+    #     marks={str(carat): str(carat) for carat in np.arange(0, 6.25, 0.25)},
+    #     step=None
+    # )
 ])
 
 @app.callback(
     Output('diamond-graphic', 'figure'),
-    [Input('xaxis-column', 'value'),
-     Input('yaxis-column', 'value'),
-     Input('carat--slider', 'value')])
-def update_graph(xaxis_column_name, yaxis_column_name, carat_value):
-    dff = df[df['carat'] <= carat_value]
+    [Input('filter1', 'value'),
+     Input('filter2', 'value')])
+def update_graph(filter1, filter2):
+    dff = df[(df['cut'] == filter1) & (df['color'] == filter2)]
 
     return {
         'data': [dict(
-            x=dff[dff['cut'] == xaxis_column_name]['price'],
-            y=dff[dff['color'] == yaxis_column_name]['price'],
+            x=dff['carat'],
+            y=dff['price'],
 #            text=dff[dff['Indicator Name'] == yaxis_column_name]['Country Name'],
             mode='markers',
             marker={
@@ -68,10 +67,10 @@ def update_graph(xaxis_column_name, yaxis_column_name, carat_value):
         )],
         'layout': dict(
             xaxis={
-                'title': xaxis_column_name,
+                'title': 'Carat',
             },
             yaxis={
-                'title': yaxis_column_name,
+                'title': 'Price',
             },
             margin={'l': 40, 'b': 40, 't': 10, 'r': 0},
             hovermode='closest'
