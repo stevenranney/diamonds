@@ -1,6 +1,6 @@
 # Diamonds, Dash, and Plotly
 
-Fun with Dash and Plotly
+Fun with Dash and Plotly![^1]
 
 ## General config
 
@@ -18,3 +18,5 @@ Fun with Dash and Plotly
         * `pip install -r requirements.txt`
 * to run app
     * from rootdir `python app.py`
+
+[^1]: And python
